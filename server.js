@@ -159,7 +159,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(404, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ message: "Livro não encontrado" }));
       }
-    } else if (method === 'GET' && url === ('/empregados/count')) {
+    } else if (method === 'GET' && url === ('/empregados/count/')) {
       const lengthPart = jsonData.length
       if (lengthPart === 0) {
         res.writeHead(400, { 'Content-Type': 'application/json' })
@@ -169,33 +169,33 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: `Existem ${lengthPart} participantes cadastrados!`, value: `${lengthPart}` }))
       }
 
-    } else if (method === 'GET' && url.startsWith('/empregados/porCargo')) {
+    } else if (method === 'GET' && url.startsWith('/empregados/porCargo/')) {
       const empregadoCargo = url.split('/')[3]
       const findEmploy = jsonData.filter(dado => dado.cargo == empregadoCargo)
 
-      if (!findEmploy) {
+      if (findEmploy.length == 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Empregado não encontrado, espero ter ajudado" }))
       } else {
         res.setHeader('Content-Type', 'application/json')
         return res.end(JSON.stringify(findEmploy))
       }
-    } else if (method === 'GET' && url.startsWith('/empregados/porHabilidade')) {
+    } else if (method === 'GET' && url.startsWith('/empregados/porHabilidade/')) {
       const empregadoHabi = url.split('/')[3]
       const findEmploy = jsonData.filter(dado => dado.habilidades.find(habilidades => habilidades == empregadoHabi))
 
-      if (!findEmploy) {
+      if (findEmploy.length == 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Empregado não encontrado, espero ter ajudado" }))
       } else {
         res.setHeader('Content-Type', 'application/json')
         return res.end(JSON.stringify(findEmploy))
       }
-    } else if (method === 'GET' && url.startsWith('/empregados/porFaixaSalarial')) {
+    } else if (method === 'GET' && url.startsWith('/empregados/porFaixaSalarial/')) {
       const minSalary = parseFloat(queryData.min);
       const maxSalary = parseFloat(queryData.max);
       const funcionariosNaFaixa = jsonData.filter(funcionario => funcionario.salario >= minSalary && funcionario.salario <= maxSalary)
-      if (!funcionariosNaFaixa) {
+      if (funcionariosNaFaixa.length == 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Não foram encontrados funcionarios com essa Faixa salarial!" }))
       } else {
@@ -206,7 +206,7 @@ const server = http.createServer((req, res) => {
       const empregadoId = url.split('/')[2]
       const findEmploy = jsonData.find(dado => dado.id == empregadoId)
 
-      if (!findEmploy) {
+      if (findEmploy.length == 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Empregado não encontrado, espero ter ajudado" }))
       } else {
