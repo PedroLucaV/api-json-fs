@@ -186,12 +186,12 @@ const server = http.createServer((req, res) => {
 
       if (findEmploy.length == 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
-        return res.end(JSON.stringify({ message: "Empregado não encontrado, espero ter ajudado" }))
+        return res.end(JSON.stringify({ message: "Não foi encontrado um empregado com essa habilidade" }))
       } else {
         res.setHeader('Content-Type', 'application/json')
         return res.end(JSON.stringify(findEmploy))
       }
-    } else if (method === 'GET' && url.startsWith('/empregados/porFaixaSalarial/')) {
+    } else if (method === 'GET' && url.startsWith('/empregados/porFaixaSalarial')) {
       const minSalary = parseFloat(queryData.min);
       const maxSalary = parseFloat(queryData.max);
       const funcionariosNaFaixa = jsonData.filter(funcionario => funcionario.salario >= minSalary && funcionario.salario <= maxSalary)
