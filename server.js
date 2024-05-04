@@ -1,6 +1,5 @@
 import http from "http";
 import { parse } from 'url';
-import fs from "fs";
 const model = {
   "nome": "José Maria",
   "cargo": "Professor",
@@ -14,30 +13,27 @@ const model = {
   "senha": "123456",
   "confirmaSenha": "123456"
 }
+import fs from "fs";
+import verDadosFuncionarios from "./funcionarios.js"
 
-const PORT = 8080;
+const PORT = 8888;
 
 const server = http.createServer((req, res) => {
   const { url, method } = req;
   const queryData = parse(req.url, true).query;
 
-  fs.readFile("funcionarios.json", "utf8", (err, data) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  verDadosFuncionarios((err, funcionarios) => {
     if (err) {
       res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: "Erro interno do servidor" }));
-      return;
+      res.end(JSON.stringify("Erro ao ler o arquivo"));
     }
-
-    let jsonData = [];
-    try {
-      jsonData = JSON.parse(data);
-    } catch (error) {
-      console.error("Erro ao analisar JSON:", error);
-    }
-
     if (url === "/empregados" && method === "GET") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(jsonData));
+      res.end(JSON.stringify(funcionarios));
     } else if (url === "/empregados" && method === "POST") {
 
       let body = "";
@@ -63,11 +59,11 @@ const server = http.createServer((req, res) => {
               JSON.stringify({ message: "Não foi autorizado! As senhas não condizem" })
             );
           } else {
-            newItem.id = jsonData.length + 1; // Gerar um novo ID
-            jsonData.push(newItem);
+            newItem.id = funcionarios.length + 1; // Gerar um novo ID
+            funcionarios.push(newItem);
             fs.writeFile(
               "funcionarios.json",
-              JSON.stringify(jsonData, null, 2),
+              JSON.stringify(funcionarios, null, 2),
               (err) => {
                 if (err) {
                   res.writeHead(500, { "Content-Type": "application/json" });
@@ -84,7 +80,6 @@ const server = http.createServer((req, res) => {
         }
       });
     } else if (url.startsWith("/empregados/") && method === "PUT") {
-
       const id = parseInt(url.split("/")[2]);
       let body = "";
       req.on("data", (chunk) => {
@@ -93,7 +88,7 @@ const server = http.createServer((req, res) => {
       req.on("end", () => {
         const updatedItem = JSON.parse(body);
         // Procurar o empregado pelo ID e atualizar seus dados
-        const index = jsonData.findIndex((item) => item.id === id);
+        const index = funcionarios.findIndex((item) => item.id === id);
         if (index !== -1) {
           if (!updatedItem.hasOwnProperty('idade') || !updatedItem.hasOwnProperty('nome') || !updatedItem.hasOwnProperty('cargo') || !updatedItem.hasOwnProperty('cpf') || !updatedItem.hasOwnProperty('senha') || !updatedItem.hasOwnProperty('confirmaSenha') || !updatedItem.hasOwnProperty('email') || !updatedItem.hasOwnProperty('telefone') || !updatedItem.hasOwnProperty('data_contratacao') || !updatedItem.hasOwnProperty('salario') || !updatedItem.hasOwnProperty('habilidades')) {
             res.writeHead(401, { "Content-Type": "application/json" });
@@ -111,10 +106,10 @@ const server = http.createServer((req, res) => {
               JSON.stringify({ message: "Não foi autorizado! As senhas não condizem" })
             );
           }
-          jsonData[index] = { ...jsonData[index], ...updatedItem };
+          funcionarios[index] = { ...funcionarios[index], ...updatedItem, id:id, cpf: funcionarios[index].cpf };
           fs.writeFile(
             "funcionarios.json",
-            JSON.stringify(jsonData, null, 2),
+            JSON.stringify(funcionarios, null, 2),
             (err) => {
               if (err) {
                 res.writeHead(500, { "Content-Type": "application/json" });
@@ -124,7 +119,7 @@ const server = http.createServer((req, res) => {
                 return;
               }
               res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify(jsonData[index]));
+              res.end(JSON.stringify(funcionarios[index]));
             }
           );
         } else {
@@ -135,12 +130,12 @@ const server = http.createServer((req, res) => {
     } else if (url.startsWith("/empregados/") && method === "DELETE") {
 
       const id = parseInt(url.split("/")[2]);
-      const index = jsonData.findIndex((item) => item.id === id);
+      const index = funcionarios.findIndex((item) => item.id === id);
       if (index !== -1) {
-        jsonData.splice(index, 1);
+        funcionarios.splice(index, 1);
         fs.writeFile(
           "funcionarios.json",
-          JSON.stringify(jsonData, null, 2),
+          JSON.stringify(funcionarios, null, 2),
           (err) => {
             if (err) {
               res.writeHead(500, { "Content-Type": "application/json" });
@@ -157,10 +152,10 @@ const server = http.createServer((req, res) => {
         );
       } else {
         res.writeHead(404, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: "Livro não encontrado" }));
+        res.end(JSON.stringify({ message: "Empregado não encontrado" }));
       }
     } else if (method === 'GET' && url === ('/empregados/count/')) {
-      const lengthPart = jsonData.length
+      const lengthPart = funcionarios.length
       if (lengthPart === 0) {
         res.writeHead(400, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ message: "Não foi encontrado participantes registrados" }))
@@ -169,11 +164,11 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: `Existem ${lengthPart} participantes cadastrados!`, value: `${lengthPart}` }))
       }
 
-    } else if (method === 'GET' && url.startsWith('/empregados/porCargo/')) {
+    } else if (method === 'GET' && url.startsWith('/empregados/porCargo/')) { 
       const empregadoCargo = url.split('/')[3]
-      const findEmploy = jsonData.filter(dado => dado.cargo == empregadoCargo)
+      const findEmploy = funcionarios.filter(dado => dado.cargo == empregadoCargo)
 
-      if (findEmploy.length == 0) {
+      if (findEmploy.length === 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Empregado não encontrado, espero ter ajudado" }))
       } else {
@@ -182,9 +177,9 @@ const server = http.createServer((req, res) => {
       }
     } else if (method === 'GET' && url.startsWith('/empregados/porHabilidade/')) {
       const empregadoHabi = url.split('/')[3]
-      const findEmploy = jsonData.filter(dado => dado.habilidades.find(habilidades => habilidades == empregadoHabi))
+      const findEmploy = funcionarios.filter(dado => dado.habilidades.find(habilidades => habilidades == empregadoHabi))
 
-      if (findEmploy.length == 0) {
+      if (findEmploy.length === 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Não foi encontrado um empregado com essa habilidade" }))
       } else {
@@ -194,8 +189,8 @@ const server = http.createServer((req, res) => {
     } else if (method === 'GET' && url.startsWith('/empregados/porFaixaSalarial')) {
       const minSalary = parseFloat(queryData.min);
       const maxSalary = parseFloat(queryData.max);
-      const funcionariosNaFaixa = jsonData.filter(funcionario => funcionario.salario >= minSalary && funcionario.salario <= maxSalary)
-      if (funcionariosNaFaixa.length == 0) {
+      const funcionariosNaFaixa = funcionarios.filter(funcionario => funcionario.salario >= minSalary && funcionario.salario <= maxSalary)
+      if (funcionariosNaFaixa.length === 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Não foram encontrados funcionarios com essa Faixa salarial!" }))
       } else {
@@ -204,9 +199,9 @@ const server = http.createServer((req, res) => {
       }
     } else if (method === 'GET' && url.startsWith('/empregados/')) {
       const empregadoId = url.split('/')[2]
-      const findEmploy = jsonData.find(dado => dado.id == empregadoId)
+      const findEmploy = funcionarios.find(dado => dado.id == empregadoId)
 
-      if (findEmploy.length == 0) {
+      if (findEmploy.length === 0) {
         res.writeHead(404, { 'Content-Type': 'application/json' })
         return res.end(JSON.stringify({ message: "Empregado não encontrado, espero ter ajudado" }))
       } else {
@@ -217,8 +212,8 @@ const server = http.createServer((req, res) => {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: "Rota não encontrada" }));
     }
+  })
   });
-});
 
 server.listen(PORT, () => {
   console.log(`Servidor on PORT:${PORT}🚀`);
