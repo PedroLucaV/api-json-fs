@@ -14,7 +14,7 @@ const model = {
   "confirmaSenha": "123456"
 }
 import fs from "fs";
-import verDadosFuncionarios from "./funcionarios.js"
+import { verDadosFuncionarios, mudarDados } from "./controller.js"
 
 const PORT = 8888;
 
@@ -35,7 +35,6 @@ const server = http.createServer((req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(funcionarios));
     } else if (url === "/empregados" && method === "POST") {
-
       let body = "";
       req.on("data", (chunk) => {
         body += chunk.toString();
@@ -61,21 +60,16 @@ const server = http.createServer((req, res) => {
           } else {
             newItem.id = funcionarios.length + 1; // Gerar um novo ID
             funcionarios.push(newItem);
-            fs.writeFile(
-              "funcionarios.json",
-              JSON.stringify(funcionarios, null, 2),
-              (err) => {
-                if (err) {
-                  res.writeHead(500, { "Content-Type": "application/json" });
-                  res.end(
-                    JSON.stringify({ message: "Erro interno do servidor" })
-                  );
-                  return;
-                }
-                res.writeHead(201, { "Content-Type": "application/json" });
-                res.end(JSON.stringify(newItem));
+            mudarDados(funcionarios, newItem, () => {
+              if (err) {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(
+                  JSON.stringify({ message: "Erro interno do servidor" })
+                );
               }
-            );
+              res.writeHead(201, { "Content-Type": "application/json" });
+              res.end(JSON.stringify(newItem));
+            })
           }
         }
       });
@@ -106,50 +100,38 @@ const server = http.createServer((req, res) => {
               JSON.stringify({ message: "Não foi autorizado! As senhas não condizem" })
             );
           }
-          funcionarios[index] = { ...funcionarios[index], ...updatedItem, id:id, cpf: funcionarios[index].cpf };
-          fs.writeFile(
-            "funcionarios.json",
-            JSON.stringify(funcionarios, null, 2),
-            (err) => {
-              if (err) {
-                res.writeHead(500, { "Content-Type": "application/json" });
-                res.end(
-                  JSON.stringify({ message: "Erro interno do servidor" })
-                );
-                return;
-              }
-              res.writeHead(200, { "Content-Type": "application/json" });
-              res.end(JSON.stringify(funcionarios[index]));
+          funcionarios[index] = { ...funcionarios[index], ...updatedItem, id: id, cpf: funcionarios[index].cpf };
+          mudarDados(funcionarios, funcionarios[index], () => {
+            if (err) {
+              res.writeHead(500, { "Content-Type": "application/json" });
+              res.end(
+                JSON.stringify({ message: "Erro interno do servidor" })
+              );
             }
-          );
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(funcionarios[index]));
+          })
+          
         } else {
           res.writeHead(404, { "Content-Type": "application/json" });
           res.end(JSON.stringify({ message: "Empregado não encontrado" }));
         }
       });
     } else if (url.startsWith("/empregados/") && method === "DELETE") {
-
       const id = parseInt(url.split("/")[2]);
       const index = funcionarios.findIndex((item) => item.id === id);
       if (index !== -1) {
         funcionarios.splice(index, 1);
-        fs.writeFile(
-          "funcionarios.json",
-          JSON.stringify(funcionarios, null, 2),
-          (err) => {
-            if (err) {
-              res.writeHead(500, { "Content-Type": "application/json" });
-              res.end(
-                JSON.stringify({ message: "Erro interno do servidor" })
-              );
-              return;
-            }
-            res.writeHead(200, { "Content-Type": "application/json" });
+        mudarDados(funcionarios, '', () => {
+          if (err) {
+            res.writeHead(500, { "Content-Type": "application/json" });
             res.end(
-              JSON.stringify({ message: "Empregado removido com sucesso" })
+              JSON.stringify({ message: "Erro interno do servidor" })
             );
           }
-        );
+          res.writeHead(201, { "Content-Type": "application/json" });
+          res.end(JSON.stringify("Funcionario apagado com sucesso!"));
+        })
       } else {
         res.writeHead(404, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ message: "Empregado não encontrado" }));
@@ -164,7 +146,7 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ message: `Existem ${lengthPart} participantes cadastrados!`, value: `${lengthPart}` }))
       }
 
-    } else if (method === 'GET' && url.startsWith('/empregados/porCargo/')) { 
+    } else if (method === 'GET' && url.startsWith('/empregados/porCargo/')) {
       const empregadoCargo = url.split('/')[3]
       const findEmploy = funcionarios.filter(dado => dado.cargo == empregadoCargo)
 
@@ -213,7 +195,7 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({ message: "Rota não encontrada" }));
     }
   })
-  });
+});
 
 server.listen(PORT, () => {
   console.log(`Servidor on PORT:${PORT}🚀`);
