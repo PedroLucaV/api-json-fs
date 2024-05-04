@@ -1,5 +1,5 @@
 {
-  "name": "http_fs",
+  "name": "api-json-fs",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
