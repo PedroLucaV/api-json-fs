@@ -1,22 +1,21 @@
 [
   {
-    "nome": "Pedro Lucas",
-    "cargo": "Desenvolvedor",
+    "nome": "Carlos Wilton",
+    "cargo": "Instrutor",
     "cpf": "123.456.789-00",
-    "email": "pedro@example.com",
-    "telefone": "(82) 98896-6238",
+    "email": "carlos@example.com",
+    "telefone": "(11) 98765-4321",
     "data_contratacao": "2022-01-10",
-    "salario": 2000,
+    "salario": 4500,
     "habilidades": [
       "Front-End",
       "Back-End",
-      "NodeJS",
-      "React",
-      "SQLITE"
+      "Docker",
+      "SQL"
     ],
     "idade": 18,
-    "senha": "123456",
-    "confirmaSenha": "123456",
+    "senha": "123",
+    "confirmaSenha": "123",
     "id": 1
   },
   {
@@ -38,5 +37,45 @@
     "senha": "Deus é Fiel",
     "confirmaSenha": "Deus é Fiel",
     "id": 2
+  },
+  {
+    "nome": "Kaua Fidelis",
+    "cargo": "Pastor",
+    "cpf": "123.456.789-00",
+    "email": "kaua@example.com",
+    "telefone": "(82) 98896-6238",
+    "data_contratacao": "2024-03-02",
+    "salario": 3000,
+    "habilidades": [
+      "Comunicação",
+      "Ouvinte",
+      "Conhecimento da Biblia",
+      "Pregação",
+      "Exorcismo"
+    ],
+    "idade": 18,
+    "senha": "Deus é Fiel",
+    "confirmaSenha": "Deus é Fiel",
+    "id": 3
+  },
+  {
+    "nome": "Kaua Fidelis",
+    "cargo": "Pastor",
+    "cpf": "123.456.789-00",
+    "email": "kaua@example.com",
+    "telefone": "(82) 98896-6238",
+    "data_contratacao": "2024-03-02",
+    "salario": 3000,
+    "habilidades": [
+      "Comunicação",
+      "Ouvinte",
+      "Conhecimento da Biblia",
+      "Pregação",
+      "Exorcismo"
+    ],
+    "idade": 18,
+    "senha": "Deus é Fiel",
+    "confirmaSenha": "Deus é Fiel",
+    "id": 4
   }
 ]
